@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CCOS_ROOT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CCOS_OE_ROOT="$CCOS_ROOT_PATH/OEROOT"
+# CCOS_OE_ROOT="$CCOS_ROOT_PATH/OEROOT"
 
 declare -a package_list=("git://git.yoctoproject.org/meta-security"
 						"git://git.yoctoproject.org/meta-arm"
@@ -26,17 +26,23 @@ print_help_menu() {
 
 fetch_sources() {
 	echo "Getting ready to fetch meta-data"
-	pushd "$CCOS_OE_ROOT" || exit
-		if [[ ! -f "$CCOS_OE_ROOT/.sources_exists" ]]; then
-			for i in "${package_list[@]}" ;
+	pushd "$CCOS_ROOT_PATH" || exit
+		if [[ ! -f ".sources_exists" ]]; then
+			for i in "${package_list[@]}";
 			do
-				echo -e "\n-- Fetching from " $i
+				echo -e "\n-- Fetching from " "$i"
 				git clone "$i"
 			done
-			touch "$CCOS_OE_ROOT/.sources_exists"
+			touch ".sources_exists"
 		else
-			echo -e "\nNOTE: Sources already exist in $CCOS_OE_ROOT: \n"
-			ls -l
+			echo -e "\nNOTE: Sources already exist in $CCOS_CCOS_ROOT_PATH: \n"
+
+			for i in "${package_list[@]}";
+			do
+			  # upstream_source_v=$i
+			  # ls -al "$(echo "$upstream_source_v" | awk -F '/' '{print $NF}')"
+			  ls -al "${i##*/}"
+			done
 		fi
 	popd || exit
 }
