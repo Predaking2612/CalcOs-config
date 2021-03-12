@@ -1,0 +1,70 @@
+#!/bin/bash
+
+CCOS_ROOT_PATH="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CCOS_OE_ROOT="$CCOS_ROOT_PATH/OEROOT"
+
+declare -a package_list=("git://git.yoctoproject.org/meta-security"
+						"git://git.yoctoproject.org/meta-arm"
+						"git://git.yoctoproject.org/meta-openssl102"
+						"git://git.yoctoproject.org/dbus-wait"
+						"git://github.com/meta-qt5/meta-qt5.git"
+						"git://git.yoctoproject.org/qemugl"
+						"git://git.yoctoproject.org/eclipse-yocto"
+						"git://git.yoctoproject.org/yocto-buildstats"
+						"git://git.yoctoproject.org/meta-external-toolchain"
+						"git://git.yoctoproject.org/meta-yocto")
+
+print_help_menu() {
+	echo    "ccbuild - CalcOs Yocto build automation tool"
+	echo    "options:"
+	echo -e "\t-f\t--fetch\t\tfetch meta data and related tools"
+	echo -e "\t-h\t--help\t\tprint this menu and exit"
+	echo -e "\t-r\t--raspberry\tbuild project for raspberry-pi devices"
+
+	exit
+}
+
+fetch_sources() {
+	echo "Getting ready to fetch meta-data"
+	pushd "$CCOS_OE_ROOT" || exit
+		if [[ ! -f "$CCOS_OE_ROOT/.sources_exists" ]]; then
+			for i in "${package_list[@]}" ;
+			do
+				echo -e "\n-- Fetching from " $i
+				git clone "$i"
+			done
+			touch "$CCOS_OE_ROOT/.sources_exists"
+		else
+			echo -e "\nNOTE: Sources already exist in $CCOS_OE_ROOT: \n"
+			ls -l
+		fi
+	popd || exit
+}
+
+if [[ $# -eq 0 ]]; then 
+	print_help_menu
+fi
+
+while [[ $# -gt 0 ]]
+do
+BUILD_OPTION="$1"
+	case $BUILD_OPTION in
+		-h|--help)
+			print_help_menu
+			;;
+		-r|--raspberry)
+			package_list+=("git://git.yoctoproject.org/meta-raspberrypi")
+			fetch_sources
+			shift 
+			shift
+			;;
+		-f|--fetch)
+			fetch_sources
+			shift
+			shift
+			;;
+		*)
+			print_help_menu
+			;;
+	esac
+done
